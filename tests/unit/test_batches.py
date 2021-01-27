@@ -41,6 +41,7 @@ stock. We allocate to warehouse stock in preference to shipment batches. We
 allocate to shipment batches in order of which has the earliest ETA.
 """
 from datetime import date
+
 from src.allocation.domain.model import Batch, OrderLine
 
 
