@@ -1,45 +1,41 @@
 from datetime import datetime
+from flask import Flask, jsonify, request
+from allocation.domain import commands
+from allocation.service_layer.handlers import InvalidSku
+from allocation import bootstrap, views
 
-from flask import Flask, json, jsonify, request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from src.allocation import config
-from src.allocation.domain import model
-from src.allocation.adapters import orm
-from src.allocation.adapters import repository
-from src.allocation.service_layer import services
-
-
-orm.start_mappers()
-get_session = sessionmaker(bind=create_engine(config.get_postgres_uri))
 app = Flask(__name__)
-
-
-@app.route("/allocate", methods=['POST'])
-def allocate_endpoint():
-    session = get_session()
-    repo = repository.SqlAlchemyRepository(session)
-    line = request.json['order_id'], request.json['sku'], request.json['qty']
-
-    try:
-        batchref = services.allocate(*line, repo, session)
-    except model.OutOfStock as e:
-        return jsonify({'message': str(e)}), 400
-
-    session.commit()
-    return jsonify({'batchref': batchref}), 201
+bus = bootstrap.bootstrap()
 
 
 @app.route("/add_batch", methods=['POST'])
 def add_batch():
-    session = get_session()
-    repo = repository.SqlAlchemyRepository(session)
     eta = request.json['eta']
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-    services.add_batch(
+    cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
-        repo, session
     )
+    bus.handle(cmd)
     return 'OK', 201
+
+
+@app.route("/allocate", methods=['POST'])
+def allocate_endpoint():
+    try:
+        cmd = commands.Allocate(
+            request.json['orderid'], request.json['sku'], request.json['qty'],
+        )
+        bus.handle(cmd)
+    except InvalidSku as e:
+        return jsonify({'message': str(e)}), 400
+
+    return 'OK', 202
+
+
+@app.route("/allocations/<orderid>", methods=['GET'])
+def allocations_view_endpoint(orderid):
+    result = views.allocations(orderid, bus.uow)
+    if not result:
+        return 'not found', 404
+    return jsonify(result), 200
