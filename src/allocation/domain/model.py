@@ -2,7 +2,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Set
-from . import commands, events
+
+
+class OutOfStock(Exception):
+    pass
 
 
 class Product:
@@ -11,7 +14,6 @@ class Product:
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
-        self.events = []  # type: List[events.Event]
 
     def allocate(self, line: OrderLine) -> str:
         try:
@@ -20,23 +22,10 @@ class Product:
             )
             batch.allocate(line)
             self.version_number += 1
-            self.events.append(events.Allocated(
-                orderid=line.orderid, sku=line.sku, qty=line.qty,
-                batchref=batch.reference,
-            ))
             return batch.reference
         except StopIteration:
-            self.events.append(events.OutOfStock(line.sku))
-            return None
+            raise OutOfStock(f'Out of stock for sku {line.sku}')
 
-    def change_batch_quantity(self, ref: str, qty: int):
-        batch = next(b for b in self.batches if b.reference == ref)
-        batch._purchased_quantity = qty
-        while batch.available_quantity < 0:
-            line = batch.deallocate_one()
-            self.events.append(
-                events.Deallocated(line.orderid, line.sku, line.qty)
-            )
 
 @dataclass(unsafe_hash=True)
 class OrderLine:
@@ -77,8 +66,9 @@ class Batch:
         if self.can_allocate(line):
             self._allocations.add(line)
 
-    def deallocate_one(self) -> OrderLine:
-        return self._allocations.pop()
+    def deallocate(self, line: OrderLine):
+        if line in self._allocations:
+            self._allocations.remove(line)
 
     @property
     def allocated_quantity(self) -> int:
@@ -90,3 +80,4 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+

@@ -1,13 +1,11 @@
-import logging
 from sqlalchemy import (
-    Table, MetaData, Column, Integer, String, Date, ForeignKey,
-    event,
+    Table, MetaData, Column, Integer, String, Date,
+    ForeignKey
 )
 from sqlalchemy.orm import mapper, relationship
 
 from allocation.domain import model
 
-logger = logging.getLogger(__name__)
 
 metadata = MetaData()
 
@@ -41,16 +39,8 @@ allocations = Table(
     Column('batch_id', ForeignKey('batches.id')),
 )
 
-allocations_view = Table(
-    'allocations_view', metadata,
-    Column('orderid', String(255)),
-    Column('sku', String(255)),
-    Column('batchref', String(255)),
-)
-
 
 def start_mappers():
-    logger.info("Starting mappers")
     lines_mapper = mapper(model.OrderLine, order_lines)
     batches_mapper = mapper(model.Batch, batches, properties={
         '_allocations': relationship(
@@ -62,7 +52,3 @@ def start_mappers():
     mapper(model.Product, products, properties={
         'batches': relationship(batches_mapper)
     })
-
-@event.listens_for(model.Product, 'load')
-def receive_load(product, _):
-    product.events = []
