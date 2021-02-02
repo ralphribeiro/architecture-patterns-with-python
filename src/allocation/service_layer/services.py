@@ -1,10 +1,10 @@
 from typing import Optional
 from datetime import date
 
-from src.allocation.adapters.repository import AbstractRepository
 from src.allocation.domain import model
 from src.allocation.domain.model import OrderLine, Batch
 from src.allocation.service_layer.unit_of_work import AbstractUnitOfWork
+
 
 class InvalidSku(Exception):
     pass
@@ -24,7 +24,7 @@ def add_batch(
 
 
 def allocate(
-    orderid: str, sku: str, qty: int, uow: AbstractUnitOfWork) -> str:
+        orderid: str, sku: str, qty: int, uow: AbstractUnitOfWork) -> str:
     line = OrderLine(orderid, sku, qty)
     with uow:
         batches = uow.batches.list()

@@ -2,22 +2,35 @@ from datetime import date, timedelta
 
 from pytest import raises
 
-from src.allocation.adapters.repository import FakeRepository
-from src.allocation.domain import model
+from src.allocation.adapters.repository import AbstractRepository
 from src.allocation.service_layer import services, unit_of_work
 
 
 tomorrow = date.today() - timedelta(days=-1)
 
 
-class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):    
+class FakeRepository(AbstractRepository):
+    def __init__(self, batches):
+        self._batches = set(batches)
+
+    def add(self, batch):
+        self._batches.add(batch)
+
+    def get(self, ref):
+        return next(b for b in self._batches if b.reference == ref)
+
+    def list(self):
+        return list(self._batches)
+
+
+class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
     def __init__(self):
         self.batches = FakeRepository([])
         self.commited = False
 
     def commit(self):
         self.commited = True
-    
+
     def rollback(self):
         pass
 
@@ -35,9 +48,10 @@ def test_add_batch():
     assert uow.batches.get("b1") is not None
     assert uow.commited
 
+
 def test_allocate_erros_for_invalid_sku():
     uow = FakeUnitOfWork()
     services.add_batch("b1", "AREALSKU", 100, None, uow)
-    
+
     with raises(services.InvalidSku, match='Invalid sku NONEXISTENTSKU'):
         services.allocate("o1", "NONEXISTENTSKU", 10, uow)
