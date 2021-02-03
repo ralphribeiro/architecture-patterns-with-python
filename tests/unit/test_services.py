@@ -1,10 +1,10 @@
 import pytest
+
 from src.allocation.adapters import repository
 from src.allocation.service_layer import services, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):
-
     def __init__(self, products):
         self._products = set(products)
 
@@ -16,7 +16,6 @@ class FakeRepository(repository.AbstractRepository):
 
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
-
     def __init__(self):
         self.products = FakeRepository([])
         self.committed = False
@@ -26,7 +25,6 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
     def rollback(self):
         pass
-
 
 
 def test_add_batch_for_new_product():
@@ -40,7 +38,8 @@ def test_add_batch_for_existing_product():
     uow = FakeUnitOfWork()
     services.add_batch("b1", "GARISH-RUG", 100, None, uow)
     services.add_batch("b2", "GARISH-RUG", 99, None, uow)
-    assert "b2" in [b.reference for b in uow.products.get("GARISH-RUG").batches]
+    assert "b2" in [
+        b.reference for b in uow.products.get("GARISH-RUG").batches]
 
 
 def test_allocate_returns_allocation():

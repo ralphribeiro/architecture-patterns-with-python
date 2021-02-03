@@ -9,7 +9,6 @@ class OutOfStock(Exception):
 
 
 class Product:
-
     def __init__(self, sku: str, batches: List[Batch], version_number: int = 0):
         self.sku = sku
         self.batches = batches
@@ -80,4 +79,3 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
-

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Optional
 from datetime import date
+from typing import Optional
 
 from src.allocation.domain import model
 from src.allocation.domain.model import OrderLine
