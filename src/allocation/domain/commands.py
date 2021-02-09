@@ -24,5 +24,5 @@ class CreateBatch(Command):
 
 @dataclass
 class ChangeBatchQuantity(Command):
-    sku: str
+    ref: str
     qty: int
