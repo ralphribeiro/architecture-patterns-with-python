@@ -1,10 +1,16 @@
 import json
 
+import pytest
+
 from tenacity import Retrying, stop_after_delay
 
 from ..random_refs import random_orderid, random_sku, random_batchref
+from . import api_client, redis_client
 
 
+@pytest.mark.usefixtures('postgres_db')
+@pytest.mark.usefixtures('restart_api')
+@pytest.mark.usefixtures('restart_redis_pubsub')
 def test_change_batch_quantity_leading_to_reallocation():
     # start with two batches and an order allocated to one of then
     orderid, sku = random_orderid(), random_sku()
@@ -28,8 +34,8 @@ def test_change_batch_quantity_leading_to_reallocation():
         with attempt:
             message = subscription.get_message(timeout=1)
             if message:
-                messages.append(message)
                 print(messages)
+                messages.append(message)
             data = json.loads(messages[-1]['data'])
             assert data['orderid'] == orderid
             assert data['batchref'] == later_batch

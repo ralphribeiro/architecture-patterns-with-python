@@ -3,15 +3,7 @@ import requests
 
 from src.allocation import config
 from ..random_refs import random_sku, random_batchref, random_orderid
-
-
-def post_to_add_batch(ref, sku, qty, eta):
-    url = config.get_api_url()
-    r = requests.post(
-        f'{url}/add_batch',
-        json={'ref': ref, 'sku': sku, 'qty': qty, 'eta': eta}
-    )
-    assert r.status_code == 201
+from .api_client import post_to_add_batch
 
 
 @pytest.mark.usefixtures('postgres_db')
