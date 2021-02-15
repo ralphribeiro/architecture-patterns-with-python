@@ -1,13 +1,14 @@
 import abc
 from typing import Set
 
-from src.allocation.domain import model
 from src.allocation.adapters import orm
+from src.allocation.domain import model
 
 
 class AbstractRepository(abc.ABC):
+
     def __init__(self):
-        self.seen: Set[model.Product] = set()
+        self.seen = set()  # type: Set[model.Product]
 
     def add(self, product: model.Product):
         self._add(product)

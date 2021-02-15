@@ -5,7 +5,7 @@ from src.allocation.domain import commands
 from src.allocation.adapters import orm
 from src.allocation.service_layer import messagebus, unit_of_work
 from src.allocation.service_layer.handlers import InvalidSku
-
+from src.allocation import views
 
 app = Flask(__name__)
 orm.start_mappers()
@@ -16,22 +16,32 @@ def add_batch():
     eta = request.json['eta']
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-    command = commands.CreateBatch(
+    cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
     )
-    messagebus.handle(command, unit_of_work.SqlAlchemyUnitOfWork())
+    uow = unit_of_work.SqlAlchemyUnitOfWork()
+    messagebus.handle(cmd, uow)
     return 'OK', 201
 
 
 @app.route("/allocate", methods=['POST'])
 def allocate_endpoint():
     try:
-        command = commands.Allocate(
+        cmd = commands.Allocate(
             request.json['orderid'], request.json['sku'], request.json['qty'],
         )
-        results = messagebus.handle(command, unit_of_work.SqlAlchemyUnitOfWork())
-        batchref = results.pop(0)
+        uow = unit_of_work.SqlAlchemyUnitOfWork()
+        messagebus.handle(cmd, uow)
     except InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 
-    return jsonify({'batchref': batchref}), 201
+    return 'OK', 202
+
+
+@app.route("/allocations/<orderid>", methods=['GET'])
+def allocations_view_endpoint(orderid):
+    uow = unit_of_work.SqlAlchemyUnitOfWork()
+    result = views.allocations(orderid, uow)
+    if not result:
+        return 'not found', 404
+    return jsonify(result), 200

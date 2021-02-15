@@ -1,17 +1,18 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, Union
+from typing import Optional
 
 from . import commands, events
 
 
 class Product:
+
     def __init__(self, sku: str, batches: list[Batch], version_number: int = 0):
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
-        self.messages: list[Union[commands.Command, events.Event]] = list()
+        self.events = []  # type: List[events.Event]
 
     def allocate(self, line: OrderLine) -> str:
         try:
@@ -20,13 +21,13 @@ class Product:
             )
             batch.allocate(line)
             self.version_number += 1
-            self.messages.append(events.Allocated(
+            self.events.append(events.Allocated(
                 orderid=line.orderid, sku=line.sku, qty=line.qty,
                 batchref=batch.reference,
             ))
             return batch.reference
         except StopIteration:
-            self.messages.append(events.OutOfStock(line.sku))
+            self.events.append(events.OutOfStock(line.sku))
             return None
 
     def change_batch_quantity(self, ref: str, qty: int):
@@ -34,8 +35,8 @@ class Product:
         batch._purchased_quantity = qty
         while batch.available_quantity < 0:
             line = batch.deallocate_one()
-            self.messages.append(
-                commands.Allocate(line.orderid, line.sku, line.qty)
+            self.events.append(
+                events.Deallocated(line.orderid, line.sku, line.qty)
             )
 
 
@@ -54,7 +55,7 @@ class Batch:
         self.sku = sku
         self.eta = eta
         self._purchased_quantity = qty
-        self._allocations: set[OrderLine] = set()
+        self._allocations = set()  # type: Set[OrderLine]
 
     def __repr__(self):
         return f'<Batch {self.reference}>'

@@ -1,5 +1,4 @@
 import json
-
 import redis
 
 from src.allocation import config
