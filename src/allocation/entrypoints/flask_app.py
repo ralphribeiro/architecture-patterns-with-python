@@ -2,13 +2,13 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 
 from src.allocation.domain import commands
-from src.allocation.adapters import orm
 from src.allocation.service_layer import messagebus, unit_of_work
 from src.allocation.service_layer.handlers import InvalidSku
-from src.allocation import views
+from src.allocation import bootstrap, views
+
 
 app = Flask(__name__)
-orm.start_mappers()
+bus = bootstrap.bootstrap()
 
 
 @app.route("/add_batch", methods=['POST'])
@@ -19,8 +19,7 @@ def add_batch():
     cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
     )
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
-    messagebus.handle(cmd, uow)
+    bus.handle(cmd)
     return 'OK', 201
 
 
@@ -30,8 +29,7 @@ def allocate_endpoint():
         cmd = commands.Allocate(
             request.json['orderid'], request.json['sku'], request.json['qty'],
         )
-        uow = unit_of_work.SqlAlchemyUnitOfWork()
-        messagebus.handle(cmd, uow)
+        bus.handle(cmd)
     except InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 
