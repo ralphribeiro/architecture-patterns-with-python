@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from flask import Flask, jsonify, request
+
 from allocation.domain import commands
 from allocation.service_layer.handlers import InvalidSku
 from allocation import bootstrap, views

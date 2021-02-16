@@ -1,4 +1,5 @@
 import logging
+
 from sqlalchemy import (
     Table, MetaData, Column, Integer, String, Date, ForeignKey,
     event,
@@ -6,6 +7,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import mapper, relationship
 
 from allocation.domain import model
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,7 @@ def start_mappers():
     mapper(model.Product, products, properties={
         'batches': relationship(batches_mapper)
     })
+
 
 @event.listens_for(model.Product, 'load')
 def receive_load(product, _):

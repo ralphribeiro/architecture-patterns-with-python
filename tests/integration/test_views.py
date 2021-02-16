@@ -1,11 +1,13 @@
-# pylint: disable=redefined-outer-name
 from datetime import date
-from sqlalchemy.orm import clear_mappers
 from unittest import mock
+
 import pytest
+from sqlalchemy.orm import clear_mappers
+
 from allocation import bootstrap, views
 from allocation.domain import commands
 from allocation.service_layer import unit_of_work
+
 
 today = date.today()
 
@@ -21,13 +23,15 @@ def sqlite_bus(sqlite_session_factory):
     yield bus
     clear_mappers()
 
+
 def test_allocations_view(sqlite_bus):
     sqlite_bus.handle(commands.CreateBatch('sku1batch', 'sku1', 50, None))
     sqlite_bus.handle(commands.CreateBatch('sku2batch', 'sku2', 50, today))
     sqlite_bus.handle(commands.Allocate('order1', 'sku1', 20))
     sqlite_bus.handle(commands.Allocate('order1', 'sku2', 20))
     # add a spurious batch and order to make sure we're getting the right ones
-    sqlite_bus.handle(commands.CreateBatch('sku1batch-later', 'sku1', 50, today))
+    sqlite_bus.handle(commands.CreateBatch(
+        'sku1batch-later', 'sku1', 50, today))
     sqlite_bus.handle(commands.Allocate('otherorder', 'sku1', 30))
     sqlite_bus.handle(commands.Allocate('otherorder', 'sku2', 10))
 

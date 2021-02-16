@@ -1,11 +1,11 @@
-# pylint: disable=broad-except, attribute-defined-outside-init
 from __future__ import annotations
 import logging
 from typing import Callable, Dict, List, Union, Type, TYPE_CHECKING
-from allocation.domain import commands, events
 
+from allocation.domain import commands, events
 if TYPE_CHECKING:
     from . import unit_of_work
+
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,6 @@ Message = Union[commands.Command, events.Event]
 
 
 class MessageBus:
-
     def __init__(
         self,
         uow: unit_of_work.AbstractUnitOfWork,
@@ -35,17 +34,16 @@ class MessageBus:
             else:
                 raise Exception(f'{message} was not an Event or Command')
 
-
     def handle_event(self, event: events.Event):
         for handler in self.event_handlers[type(event)]:
             try:
-                logger.debug('handling event %s with handler %s', event, handler)
+                logger.debug('handling event %s with handler %s',
+                             event, handler)
                 handler(event)
                 self.queue.extend(self.uow.collect_new_events())
             except Exception:
                 logger.exception('Exception handling event %s', event)
                 continue
-
 
     def handle_command(self, command: commands.Command):
         logger.debug('handling command %s', command)

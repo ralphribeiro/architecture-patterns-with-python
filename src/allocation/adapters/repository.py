@@ -1,12 +1,11 @@
 import abc
 from typing import Set
+
 from allocation.adapters import orm
 from allocation.domain import model
 
 
-
 class AbstractRepository(abc.ABC):
-
     def __init__(self):
         self.seen = set()  # type: Set[model.Product]
 
@@ -39,10 +38,7 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
 
-
-
 class SqlAlchemyRepository(AbstractRepository):
-
     def __init__(self, session):
         super().__init__()
         self.session = session

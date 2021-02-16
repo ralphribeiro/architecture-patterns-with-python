@@ -1,7 +1,7 @@
-#pylint: disable=unused-argument
 from __future__ import annotations
 from dataclasses import asdict
 from typing import List, Dict, Callable, Type, TYPE_CHECKING
+
 from allocation.domain import commands, events, model
 from allocation.domain.model import OrderLine
 if TYPE_CHECKING:
@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 class InvalidSku(Exception):
     pass
-
 
 
 def add_batch(
@@ -54,8 +53,6 @@ def change_batch_quantity(
         product.change_batch_quantity(ref=cmd.ref, qty=cmd.qty)
         uow.commit()
 
-
-#pylint: disable=unused-argument
 
 def send_out_of_stock_notification(
         event: events.OutOfStock, notifications: notifications.AbstractNotifications,

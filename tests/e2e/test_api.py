@@ -1,6 +1,8 @@
 import pytest
+
 from ..random_refs import random_batchref, random_orderid, random_sku
 from . import api_client
+
 
 @pytest.mark.usefixtures('postgres_db')
 @pytest.mark.usefixtures('restart_api')

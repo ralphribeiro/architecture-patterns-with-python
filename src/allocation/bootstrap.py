@@ -1,5 +1,6 @@
 import inspect
 from typing import Callable
+
 from allocation.adapters import orm, redis_eventpublisher
 from allocation.adapters.notifications import (
     AbstractNotifications, EmailNotifications
@@ -20,7 +21,8 @@ def bootstrap(
     if start_orm:
         orm.start_mappers()
 
-    dependencies = {'uow': uow, 'notifications': notifications, 'publish': publish}
+    dependencies = {'uow': uow,
+                    'notifications': notifications, 'publish': publish}
     injected_event_handlers = {
         event_type: [
             inject_dependencies(handler, dependencies)
