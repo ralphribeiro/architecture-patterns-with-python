@@ -1,17 +1,17 @@
+#pylint: disable=unused-argument
 from __future__ import annotations
 from dataclasses import asdict
 from typing import List, Dict, Callable, Type, TYPE_CHECKING
-
-from src.allocation.domain import commands, events, model
-from src.allocation.domain.model import OrderLine
-
+from allocation.domain import commands, events, model
+from allocation.domain.model import OrderLine
 if TYPE_CHECKING:
-    from src.allocation.adapters import notifications
+    from allocation.adapters import notifications
     from . import unit_of_work
 
 
 class InvalidSku(Exception):
     pass
+
 
 
 def add_batch(
@@ -55,6 +55,8 @@ def change_batch_quantity(
         uow.commit()
 
 
+#pylint: disable=unused-argument
+
 def send_out_of_stock_notification(
         event: events.OutOfStock, notifications: notifications.AbstractNotifications,
 ):
@@ -94,14 +96,14 @@ def remove_allocation_from_read_model(
         uow.commit()
 
 
-EVENT_HANDLERS: dict[type[events.Event], list[Callable]] = {
+EVENT_HANDLERS = {
     events.Allocated: [publish_allocated_event, add_allocation_to_read_model],
     events.Deallocated: [remove_allocation_from_read_model, reallocate],
     events.OutOfStock: [send_out_of_stock_notification],
-}
+}  # type: Dict[Type[events.Event], List[Callable]]
 
-COMMAND_HANDLERS: dict[type[commands.Command], Callable] = {
+COMMAND_HANDLERS = {
     commands.Allocate: allocate,
     commands.CreateBatch: add_batch,
     commands.ChangeBatchQuantity: change_batch_quantity,
-}
+}  # type: Dict[Type[commands.Command], Callable]
