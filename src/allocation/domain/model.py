@@ -89,7 +89,7 @@ class Batch:
         return self.sku == line.sku and self.available_quantity >= line.qty
 
     def change_quantity(self, qty: int) -> Iterable[events.Deallocated]:
-        self._purchased_quantity = qty  # pylint: disable=protected-access
+        self._purchased_quantity = qty
         while self.available_quantity < 0:
             line = self.deallocate_one()
             yield events.Deallocated(line.orderid, line.sku, line.qty)
