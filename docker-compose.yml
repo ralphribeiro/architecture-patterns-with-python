@@ -45,7 +45,7 @@ services:
       - flask
       - run
       - --host=0.0.0.0
-      - --port=80
+      - --port=8080
     ports:
       - "5005:80"
 
@@ -67,3 +67,13 @@ services:
     ports:
       - "11025:1025"
       - "18025:8025"
+
+  locust:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes: 
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/api.py
+    depends_on:
+      - api
