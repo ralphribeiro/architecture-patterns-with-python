@@ -21,8 +21,8 @@ def random_order_id(name: str = None):
     return f'order-{name}{random_suffix()}'
 
 
-class ApiUser(HttpUser):
-    wait_time = between(0.1, 2)
+class ClientApi(HttpUser):
+    wait_time = between(0.2, 2.5)
 
     @task
     def allocate_batch(self):
@@ -32,14 +32,14 @@ class ApiUser(HttpUser):
         eta = datetime.today().date().isoformat()
 
         self.client.post(
-            '/add_batch', json={
+            'add_batch', json={
                 'eta': eta,
                 'ref': ref,
-                'sku': ref,
-                'qty': qty
-            }            
+                'sku': sku,
+                'qty': qty,
+            }
         )
 
-
-    # def on_start(self):
-        # self.client
+    # @task
+    def get_root(self):
+        self.client.get("/")

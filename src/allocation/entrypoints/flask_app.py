@@ -10,6 +10,10 @@ app = Flask(__name__)
 bus = bootstrap.bootstrap()
 
 
+@app.route("/", methods=['GET'])
+def root_test():
+    return jsonify("olá mundo")
+
 @app.route("/add_batch", methods=['POST'])
 def add_batch():
     eta = request.json['eta']
