@@ -17,10 +17,13 @@ def root_test():
 @app.route("/add_batch", methods=['POST'])
 def add_batch():
     eta = request.json['eta']
-    if eta is not None:
+    if eta is None:
         eta = datetime.fromisoformat(eta).date()
     cmd = commands.CreateBatch(
-        request.json['ref'], request.json['sku'], request.json['qty'], eta,
+        request.json['ref'], 
+        request.json['sku'], 
+        request.json['qty'], 
+        eta,
     )
     bus.handle(cmd)
     return 'OK', 201

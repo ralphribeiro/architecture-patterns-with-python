@@ -3,6 +3,7 @@ build:
 
 up:
 	docker-compose up -d --scale worker_locust=5
+	# docker-compose up -d
 
 test: up
 	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e

@@ -9,15 +9,15 @@ def random_suffix():
     return uuid4().hex[:6]
 
 
-def random_sku(name: str = None):
+def random_sku(name=''):
     return f'sku-{name}{random_suffix()}'
 
 
-def random_batchref(name: str = None):
+def random_batchref(name=''):
     return f'batch-{name}{random_suffix()}'
 
 
-def random_order_id(name: str = None):
+def random_order_id(name=''):
     return f'order-{name}{random_suffix()}'
 
 
@@ -27,16 +27,16 @@ class ClientApi(HttpUser):
     @task
     def allocate_batch(self):
         sku = random_sku()
-        ref = random_batchref()
+        ref = random_batchref(1)
         qty = randint(1, 10**6)
         eta = datetime.today().date().isoformat()
 
         self.client.post(
             'add_batch', json={
-                'eta': eta,
                 'ref': ref,
                 'sku': sku,
                 'qty': qty,
+                'eta': eta
             }
         )
 
