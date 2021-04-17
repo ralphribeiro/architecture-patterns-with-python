@@ -2,7 +2,7 @@ build:
 	docker-compose build
 
 up:
-	docker-compose up -d --scale worker_locust=5
+	docker-compose up -d --scale worker_locust=2
 	# docker-compose up -d
 
 test: up
