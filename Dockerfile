@@ -10,7 +10,6 @@ ENV PYTHON_VERSION 3.9.4
 
 RUN mkdir -p /src
 COPY src/ /src/
-# RUN pip install -e /src
 COPY tests/ /tests/
 
 WORKDIR /src
