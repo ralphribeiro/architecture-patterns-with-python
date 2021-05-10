@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from flask import Flask, jsonify, request
 
@@ -10,41 +10,44 @@ app = Flask(__name__)
 bus = bootstrap.bootstrap()
 
 
-@app.route("/", methods=['GET'])
+@app.route("/", methods=["GET"])
 def root_test():
     return jsonify("olá mundo")
 
-@app.route("/add_batch", methods=['POST'])
+
+@app.route("/add_batch", methods=["POST"])
 def add_batch():
-    eta = request.json['eta']
+    eta = request.json["eta"]
     if eta is None:
-        eta = datetime.fromisoformat(eta).date()
+        eta = date.today()
     cmd = commands.CreateBatch(
-        request.json['ref'], 
-        request.json['sku'], 
-        request.json['qty'], 
+        request.json["ref"],
+        request.json["sku"],
+        request.json["qty"],
         eta,
     )
     bus.handle(cmd)
-    return 'OK', 201
+    return "OK", 201
 
 
-@app.route("/allocate", methods=['POST'])
+@app.route("/allocate", methods=["POST"])
 def allocate_endpoint():
     try:
         cmd = commands.Allocate(
-            request.json['orderid'], request.json['sku'], request.json['qty'],
+            request.json["orderid"],
+            request.json["sku"],
+            request.json["qty"],
         )
         bus.handle(cmd)
     except InvalidSku as e:
-        return jsonify({'message': str(e)}), 400
+        return jsonify({"message": str(e)}), 400
 
-    return 'OK', 202
+    return "OK", 202
 
 
-@app.route("/allocations/<orderid>", methods=['GET'])
+@app.route("/allocations/<orderid>", methods=["GET"])
 def allocations_view_endpoint(orderid):
     result = views.allocations(orderid, bus.uow)
     if not result:
-        return 'not found', 404
+        return "not found", 404
     return jsonify(result), 200
