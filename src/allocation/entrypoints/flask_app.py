@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from flask import Flask, jsonify, request
 
@@ -18,8 +18,8 @@ def root_test():
 @app.route("/add_batch", methods=["POST"])
 def add_batch():
     eta = request.json["eta"]
-    if eta is None:
-        eta = date.today()
+    if eta is not None:
+        datetime.fromisoformat(eta).date()
     cmd = commands.CreateBatch(
         request.json["ref"],
         request.json["sku"],

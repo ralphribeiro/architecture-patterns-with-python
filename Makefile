@@ -2,8 +2,8 @@ build:
 	docker-compose build
 
 up:
-	docker-compose up -d --scale worker_locust=2
-	# docker-compose up -d
+	# docker-compose up -d --scale worker_locust=2
+	docker-compose up -d
 
 test: up
 	docker-compose run --rm --no-deps --entrypoint="python -m pytest" api /tests/unit /tests/integration /tests/e2e
